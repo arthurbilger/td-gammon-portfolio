@@ -1,0 +1,28 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Environnement virtuel
+venv/
+.venv/
+
+# Variables d'environnement
+.env
+
+# Donnees (trop lourdes pour GitHub)
+data/*.csv
+data/*.parquet
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Outputs temporaires
+outputs/*.pkl
+outputs/*.pt
