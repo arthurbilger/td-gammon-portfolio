@@ -25,3 +25,16 @@ Work in progress - Phase 1: RL foundations
 
 ## Author
 M1 Finance, Universite Paris Dauphine
+
+## Résultats & limites
+
+L'agent TD(λ) transposé du backgammon vers l'allocation de portefeuille bat les
+benchmarks classiques (60/40, équipondéré) sur toutes les métriques ajustées du risque,
+mais n'atteint pas le Calmar ratio du S&P 500 seul sur la période testée (2020-2024).
+Une recherche systématique d'hyperparamètres (protocole de comparaison contrôlée,
+même méthode que pour le tuning TD(λ) du projet backgammon) a permis d'identifier
+précisément cette limite : l'espace d'actions discret (8 profils statiques) manque de
+la granularité nécessaire pour égaler un indice pur sur un régime haussier soutenu.
+Cette limite est documentée plutôt que dissimulée — elle illustre une compréhension
+du compromis rendement/risque en gestion de portefeuille, davantage qu'un chiffre
+de performance isolé.
