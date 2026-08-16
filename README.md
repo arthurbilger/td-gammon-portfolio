@@ -25,16 +25,28 @@ ETFs, backtested out-of-sample.
 
 | Strategy | CAGR | Vol | Sharpe | Sortino | Max DD | Calmar |
 |---|---|---|---|---|---|---|
-| **Agent TD(λ)** | +11.1% | 20.7% | 0.44 | 0.53 | -31.8% | 0.35 |
+| **Agent TD(λ)** | +10.7% to +11.4% | ~20.7% | 0.42–0.46 | 0.51–0.55 | -31.8% | 0.34–0.36 |
 | S&P 500 (SPY) | +14.4% | 21.1% | 0.59 | 0.70 | -33.7% | 0.43 |
 | 60/40 | +5.3% | 13.4% | 0.24 | 0.31 | -28.3% | 0.19 |
 | Equal-weight | +4.7% | 13.8% | 0.19 | 0.24 | -26.6% | 0.18 |
 
-The agent beats both static benchmarks (60/40, equal-weight) on every
-risk-adjusted metric, and reduces max drawdown vs. a pure S&P 500 position.
-It does not beat SPY's Calmar ratio on this specific bull-market test window
-— a limitation identified, diagnosed, and documented rather than hidden (see
-`notebooks/04_portfolio_allocation.ipynb`, final section).
+The agent consistently beats both static benchmarks (60/40, equal-weight) on every
+risk-adjusted metric across all observed runs, and consistently reduces max drawdown
+vs. a pure S&P 500 position. It does not beat SPY's Calmar ratio on this specific
+bull-market test window — a limitation identified, diagnosed, and documented rather
+than hidden (see `notebooks/04_portfolio_allocation.ipynb`, final section).
+
+**Note on the result range:** despite a fixed seed (42) propagated explicitly to
+every source of randomness, repeated runs produce slightly different outcomes
+(best λ_dd oscillates between 1.0 and 1.5, CAGR varies by ~0.7 points). This is
+most likely caused by non-deterministic summation order in multi-threaded BLAS
+matrix operations, which compounds across thousands of training iterations with
+feedback (each step's weights depend on the previous one). NumPy thread count is
+now pinned to 1 (`OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS`) as
+a mitigation; the fix has not yet been fully validated across repeated runs. The
+range above reflects genuinely observed outcomes rather than a single
+cherry-picked run — reporting the range is more honest than reporting a single
+number that may not reproduce exactly.
 
 ## Why this maps to asset management
 
@@ -91,6 +103,10 @@ See `requirements.txt` for exact versions.
 - All environments seeded via `np.random.default_rng(seed)`, propagated
   explicitly through training and evaluation — no dependency on global
   `np.random` state
+- NumPy thread count pinned to 1 (`OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`,
+  `MKL_NUM_THREADS`) to eliminate non-deterministic summation order in
+  multi-threaded BLAS operations — mitigates, but has not yet been fully
+  validated to eliminate, run-to-run variance (see note in Key results above)
 - Model weights verified non-empty on save (`os.path.getsize`) before any
   further processing
 - Train/test split strictly chronological (train ≤ 2019, test 2020–2024);
@@ -115,6 +131,34 @@ See `requirements.txt` for exact versions.
 - Halperin, I., Kolm, P., Ritter, G. (2025). *AI in Asset Management*.
   CFA Institute Research Foundation.
 
+## Development Notes
+
+This is an educational project, built while learning reinforcement learning
+and quantitative finance concepts largely from scratch. Claude (Anthropic)
+was used throughout as a learning and development aid:
+
+- **Learning support**: explaining theoretical concepts (TD-λ, eligibility
+  traces, MDP formalism), answering questions as they came up, and helping
+  connect RL theory to finance concepts (e.g. temporal-difference credit
+  assignment vs. discounting in valuation)
+- **Environment and tooling**: setting up the Python environment, debugging
+  errors, and troubleshooting the notebook/`src` workflow
+- **Code implementation**: a substantial share of the code (the neural
+  network, TD(λ) training loop, environment classes, reward function) was
+  written with AI assistance rather than independently from scratch
+- **Documentation and translation**: drafting the README, the accompanying
+  scientific dossier, and translating the project from French to English
+- **General AI literacy**: this project was also an opportunity to practice
+  working with an AI assistant on a multi-week technical project — prompting,
+  iterating, and critically checking its output (e.g. catching a
+  reproducibility bug, verifying result consistency across notebook reruns)
+
+The project idea — transferring TD-Gammon's learning framework to portfolio
+allocation — and the overall direction of the work are mine. Given the scope
+of AI assistance on implementation, this project is best understood as a
+guided learning exercise in reinforcement learning and applied AI tooling,
+rather than as independently authored research code.
+
 ## Author
 
-M1 Finance, Université Paris-Dauphine
+Arthur BILGER - M1 Finance, Université Paris-Dauphine
